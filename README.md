@@ -39,8 +39,6 @@ env = gym.make('FetchPickAndPlaceDense-v2', render_mode="rgb_array")
 
 model = PPO("MultiInputPolicy", env, verbose=1, tensorboard_log="./Fetch_tensorbord/")
 model.learn(total_timesteps=1e6, progress_bar=True)
-model.save("FetchPickAndPlaceDense-v2_PPO_1e6")
-print("Finish!")
 
 obs, info = env.reset()
 
