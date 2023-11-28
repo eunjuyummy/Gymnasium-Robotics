@@ -31,21 +31,25 @@ goal, e.g. state derived from the simulation.
 
 ```python
 import gymnasium as gym
+from stable_baselines3 import PPO
+from gymnasium_robotics import register_robotics_envs
+register_robotics_envs()
 
-env = gym.make("FetchReach-v2")
-env.reset()
-obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
+env = gym.make('FetchPickAndPlaceDense-v2', render_mode="rgb_array")
 
-# The following always has to hold:
-assert reward == env.compute_reward(obs["achieved_goal"], obs["desired_goal"], info)
-assert truncated == env.compute_truncated(obs["achieved_goal"], obs["desired_goal"], info)
-assert terminated == env.compute_terminated(obs["achieved_goal"], obs["desired_goal"], info)
+model = PPO("MultiInputPolicy", env, verbose=1, tensorboard_log="./Fetch_tensorbord/")
+model.learn(total_timesteps=1e6, progress_bar=True)
+model.save("FetchPickAndPlaceDense-v2_PPO_1e6")
+print("Finish!")
 
-# However goals can also be substituted:
-substitute_goal = obs["achieved_goal"].copy()
-substitute_reward = env.compute_reward(obs["achieved_goal"], substitute_goal, info)
-substitute_terminated = env.compute_terminated(obs["achieved_goal"], substitute_goal, info)
-substitute_truncated = env.compute_truncated(obs["achieved_goal"], substitute_goal, info)
+obs, info = env.reset()
+
+for _ in range(10000):
+    action, _ = model.predict(obs)
+    obs, reward, terminated, truncated, info = env.step(action)
+    if terminated or truncated:
+        obs, info = env.reset()
+env.close()
 ```
 
 The `GoalEnv` class can also be used for custom environments.
