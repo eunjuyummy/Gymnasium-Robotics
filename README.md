@@ -8,31 +8,11 @@ This library contains a collection of Reinforcement Learning robotic environment
 
 The documentation website is at [robotics.farama.org](https://robotics.farama.org/), and we have a public discord server (which we also use to coordinate development work) that you can join here: [https://discord.gg/YymmHrvS](https://discord.gg/YymmHrvS)
 
-## Installation
-
-To install the Gymnasium-Robotics environments use `pip install gymnasium-robotics`
-
-These environments also require the MuJoCo engine from Deepmind to be installed. Instructions to install the physics engine can be found at the [MuJoCo website](https://mujoco.org/) and the [MuJoCo Github repository](https://github.com/deepmind/mujoco).  
-
-Note that the latest environment versions use the latest mujoco python bindings maintained by the MuJoCo team. If you wish to use the old versions of the environments that depend on [mujoco-py](https://github.com/openai/mujoco-py), please install this library with `pip install gymnasium-robotics[mujoco-py]`
-
-We support and test for Python 3.8, 3.9, 3.10 and 3.11 on Linux and macOS. We will accept PRs related to Windows, but do not officially support it.
-
 ## Environments
 
 `Gymnasium-Robotics` includes the following groups of environments:
 
 * [Fetch](https://robotics.farama.org/envs/fetch/) - A collection of environments with a 7-DoF robot arm that has to perform manipulation tasks such as Reach, Push, Slide or Pick and Place.
-* [Shadow Dexterous Hand](https://robotics.farama.org/envs/shadow_dexterous_hand/) - A collection of environments with a 24-DoF anthropomorphic robotic hand that has to perform object manipulation tasks with a cube, egg-object, or pen. There are variations of these environments that also include data from 92 touch sensors in the observation space.
-
-The [D4RL](https://github.com/Farama-Foundation/D4RL) environments are now available. These environments have been refactored and may not have the same action/observation spaces as the original, please read their documentation:
-
-* [Maze Environments](https://robotics.farama.org/envs/maze/) - An agent has to navigate through a maze to reach certain goal position. Two different agents can be used: a 2-DoF force-controlled ball, or the classic `Ant` agent from the [Gymnasium MuJoCo environments](https://gymnasium.farama.org/environments/mujoco/ant/). The environment can be initialized with a variety of maze shapes with increasing levels of difficulty.
-* [Adroit Arm](https://robotics.farama.org/envs/adroit_hand/) - A collection of environments that use the Shadow Dexterous Hand with additional degrees of freedom for the arm movement.
-The different tasks involve hammering a nail, opening a door, twirling a pen, or picking up and moving a ball.
-* [Franka Kitchen](https://robotics.farama.org/envs/franka_kitchen/) - Multitask environment in which a 9-DoF Franka robot is placed in a kitchen containing several common household items. The goal of each task is to interact with the items in order to reach a desired goal configuration.
-
-**WIP**: generate new `D4RL` environment datasets with [Minari](https://github.com/Farama-Foundation/Minari).
 
 ## Multi-goal API
 
@@ -70,11 +50,6 @@ substitute_truncated = env.compute_truncated(obs["achieved_goal"], substitute_go
 
 The `GoalEnv` class can also be used for custom environments.
 
-## Project Maintainers
-Main Contributors: [Rodrigo Perez-Vicente](https://github.com/rodrigodelazcano), [Kallinteris Andreas](https://github.com/Kallinteris-Andreas), [Jet Tai](https://github.com/jjshoots) 
-
-Maintenance for this project is also contributed by the broader Farama team: [farama.org/team](https://farama.org/team).
-
 ## Citation
 
 If you use this in your research, please cite:
@@ -88,7 +63,7 @@ If you use this in your research, please cite:
 }
 ```
 
-## Citation
+## Action Space
 
 The action space is a `Box(-1.0, 1.0, (4,), float32)`. An action represents the Cartesian displacement dx, dy, and dz of the end effector. In addition to a last action that controls closing and opening of the gripper.
 
@@ -99,7 +74,7 @@ The action space is a `Box(-1.0, 1.0, (4,), float32)`. An action represents the 
 | 2   | Displacement of the end effector in the z direction dz                                                                                |
 | 3   | Positional displacement per timestep of each finger of the gripper                                                                    |
 
- ## Observation Space
+## Observation Space
 
 The observation is a `goal-aware observation space`. It consists of a dictionary with information about the robot's end effector state and goal. The kinematics observations are derived from Mujoco bodies known as [sites](https://mujoco.readthedocs.io/en/latest/XMLreference.html?highlight=site#body-site) attached to the body of interest such as the block or the end effector.
 Only the observations from the gripper fingers are derived from joints. Also to take into account the temporal influence of the step time, velocity values are multiplied by the step time dt=number_of_sub_steps*sub_step_time. The dictionary consists of the following 3 keys:
