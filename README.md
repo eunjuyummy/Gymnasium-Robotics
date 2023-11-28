@@ -1,4 +1,4 @@
-## Gymnasium Robotics
+# Gymnasium Robotics
 <p align="center">
   <img src="https://raw.githubusercontent.com/Farama-Foundation/Gymnasium-Robotics/main/gymrobotics-revised-text.png" width="500px"/>
 </p>
