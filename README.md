@@ -52,19 +52,6 @@ env.close()
 
 The `GoalEnv` class can also be used for custom environments.
 
-## Citation
-
-If you use this in your research, please cite:
-```
-@software{gymnasium_robotics2023github,
-  author = {Rodrigo de Lazcano and Kallinteris Andreas and Jun Jet Tai and Seungjae Ryan Lee and Jordan Terry},
-  title = {Gymnasium Robotics},
-  url = {http://github.com/Farama-Foundation/Gymnasium-Robotics},
-  version = {1.2.3},
-  year = {2023},
-}
-```
-
 ## Action Space
 
 The action space is a `Box(-1.0, 1.0, (4,), float32)`. An action represents the Cartesian displacement dx, dy, and dz of the end effector. In addition to a last action that controls closing and opening of the gripper.
