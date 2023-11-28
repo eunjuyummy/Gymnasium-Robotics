@@ -128,7 +128,3 @@ The height of the target is initialized at `(z) = [0.42] m ` and an offset is ad
 
 The episode will be `truncated` when the duration reaches a total of `max_episode_steps` which by default is set to 50 timesteps.
 The episode is never `terminated` since the task is continuing with infinite horizon.
-
-## Arguments
-
-To increase/decrease the maximum number of timesteps before the episode is `truncated` the `max_episode_steps` argument can be set at initialization. The default value is 50. For example, to increase the total number of timesteps to 100 make the environment as follows:
