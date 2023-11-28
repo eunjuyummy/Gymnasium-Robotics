@@ -12,7 +12,6 @@ DEFAULT_CAMERA_CONFIG = {
     "lookat": np.array([1.3, 0.75, 0.55]),
 }
 
-
 def goal_distance(goal_a, goal_b):
     assert goal_a.shape == goal_b.shape
     return np.linalg.norm(goal_a - goal_b, axis=-1)
@@ -71,13 +70,44 @@ def get_base_fetch_env(RobotEnvClass: Union[MujocoPyRobotEnv, MujocoRobotEnv]):
         # GoalEnv methods
         # ----------------------------
 
-        def compute_reward(self, achieved_goal, goal, info):
+        """def compute_reward(self, achieved_goal, goal, info):
             # Compute distance between goal and the achieved goal.
             d = goal_distance(achieved_goal, goal)
             if self.reward_type == "sparse":
                 return -(d > self.distance_threshold).astype(np.float32)
             else:
-                return -d
+                return -d"""
+        def compute_reward(self, achieved_goal, goal, info):
+            #print("achieved_goal: ", achieved_goal)
+            #print("goal: ", goal)
+            Reward = 0
+            # Compute distance between goal and the achieved goal.
+            #print("distance: ", goal_distance(self._get_obs()["observation"][0:3], self._get_obs()["observation"][3:6]))
+            if (np.sum(self._get_obs()["observation"][6:9] ** 2) <= 0.0012):
+                #print("차이: ", self._get_obs()["observation"][6:9] ** 2)
+                #print("HELLO333")
+                Reward = Reward - 0.1
+            else:
+                Reward = Reward - 3
+            # Compute distance between goal and the achieved goal.
+            d1 = goal_distance(achieved_goal[2:3], goal[2:3]) # z
+            #print(d1)
+            d2 = goal_distance(achieved_goal[1:2], goal[1:2]) # y
+            #print(d2)
+            d3 = goal_distance(achieved_goal[0:1], goal[0:1]) # x
+            #print(d3)
+            Reward = Reward - d1 * 10.0
+            Reward = Reward - d2 * 10.0
+            Reward = Reward - d3 * 10.0
+            #print(d1*10 + d2*10 + d3* 10)
+            if self._get_obs()["observation"][2] <= 0.1:
+                Reward = Reward - 5
+                #print("HELLO")
+            if self.reward_type == "sparse":
+                return 0
+                #return -(d1 * 0.6 + d2 * 0.2 + d3 * 0.2 > self.distance_threshold).astype(np.float32)
+            else:
+                return Reward
 
         # RobotEnv methods
         # ----------------------------
@@ -135,6 +165,14 @@ def get_base_fetch_env(RobotEnvClass: Union[MujocoPyRobotEnv, MujocoRobotEnv]):
                     gripper_vel,
                 ]
             )
+            #print("grip_pos: ", obs[0:3])
+            
+            #print("object_pos: ", obs[3:6])
+            
+            #print("차이: ", obs[6:9])
+            
+            #print("gripper_state: ", obs[9:11])
+            #print(obs)
 
             return {
                 "observation": obs.copy(),
