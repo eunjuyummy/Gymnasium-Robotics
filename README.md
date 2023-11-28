@@ -14,7 +14,7 @@ The documentation website is at [robotics.farama.org](https://robotics.farama.or
 
 * [Fetch](https://robotics.farama.org/envs/fetch/) - A collection of environments with a 7-DoF robot arm that has to perform manipulation tasks such as Reach, Push, Slide or Pick and Place.
 
-## Multi-goal API
+## Fetch Pick and Place
 
 The robotic environments use an extension of the core Gymansium API by inheriting from [GoalEnv](https://robotics.farama.org/envs/#) class. The new API forces the environments to have a dictionary observation space that contains 3 keys:
 
@@ -49,8 +49,6 @@ for _ in range(10000):
         obs, info = env.reset()
 env.close()
 ```
-
-The `GoalEnv` class can also be used for custom environments.
 
 ## Action Space
 
