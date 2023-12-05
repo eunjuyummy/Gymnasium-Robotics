@@ -105,11 +105,7 @@ class BaseRobotEnv(GoalEnv):
     # ----------------------------
     def compute_terminated(self, achieved_goal, desired_goal, info):
         """All the available environments are currently continuing tasks and non-time dependent. The objective is to reach the goal for an indefinite period of time."""
-        #print(self._get_obs().g_s)
-        if((np.linalg.norm(achieved_goal - desired_goal, axis=-1) > 0.05)):
-            return False
-        else:
-            return True
+        return False
 
     def compute_truncated(self, achievec_goal, desired_goal, info):
         """The environments will be truncated only if setting a time limit with max_steps which will automatically wrap the environment in a gymnasium TimeLimit wrapper."""
