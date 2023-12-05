@@ -78,33 +78,96 @@ def get_base_fetch_env(RobotEnvClass: Union[MujocoPyRobotEnv, MujocoRobotEnv]):
             else:
                 return -d"""
         def compute_reward(self, achieved_goal, goal, info):
-            #print("achieved_goal: ", achieved_goal)
-            #print("goal: ", goal)
+            global flag_setting
+            global set_achived_goal
+            global set_goal
+            global set_gripper
+
+            if(flag_setting == 0):
+                flag_setting = 1
+                set_achived_goal = achieved_goal
+                set_goal = goal
+                set_gripper = self._get_obs()["observation"][0:3]
+
+            if(np.array_equal(set_goal, goal) == False):
+                flag_setting = 0
+            
+            flag_grasp = 0
+            flag_lift = 0
+
+            #print("set_achieved_goal: ", set_achived_goal) # 초기 블럭 위치
+            #print("set_goal: ", set_goal) # 초기 빨간 위치
+
+            #print("achieved_goal: ", achieved_goal) # 블럭 위치
+            #print("goal: ", goal) # 빨간 위치
+            #print("block: ", self._get_obs()["observation"][3:6]) # achieved_goal과 정확히 동일
             Reward = 0
-            # Compute distance between goal and the achieved goal.
-            #print("distance: ", goal_distance(self._get_obs()["observation"][0:3], self._get_obs()["observation"][3:6]))
-            if (np.sum(self._get_obs()["observation"][6:9] ** 2) <= 0.0012):
-                #print("차이: ", self._get_obs()["observation"][6:9] ** 2)
-                #print("HELLO333")
-                Reward = Reward - 0.1
-            else:
-                Reward = Reward - 3
-            # Compute distance between goal and the achieved goal.
-            d1 = goal_distance(achieved_goal[2:3], goal[2:3]) # z
-            #print(d1)
-            d2 = goal_distance(achieved_goal[1:2], goal[1:2]) # y
-            #print(d2)
-            d3 = goal_distance(achieved_goal[0:1], goal[0:1]) # x
-            #print(d3)
-            Reward = Reward - d1 * 10.0
-            Reward = Reward - d2 * 10.0
-            Reward = Reward - d3 * 10.0
-            #print(d1*10 + d2*10 + d3* 10)
-            if self._get_obs()["observation"][2] <= 0.1:
-                Reward = Reward - 5
-                #print("HELLO")
+            # 0: achieved_goal이 goal에 도달했을 때
+            #print(goal_distance(achieved_goal, goal)) # block과 빨간 점의 거리
+            if(goal_distance(achieved_goal, goal) < 0.04):
+                Reward = Reward + 1
+            
+            # 1: 닿았을 때 (gripper와 block 사이의 거리: 0.04미만)
+            #print(goal_distance(self._get_obs()["observation"][0:3], self._get_obs()["observation"][3:6])) # gripper와 block 사이의 거리
+            #print(goal_distance(self._get_obs()["observation"][6:9], np.array([0, 0, 0]))) # 위와 정확히 동일
+            d1 = goal_distance(self._get_obs()["observation"][6:9], np.array([0, 0, 0])) # gripper와 block 사이의 거리
+            set_d1 = goal_distance(set_gripper, np.array([0, 0, 0])) # 초기 gripper 위치와 원점 사이의 거리
+            Reward = Reward + map_value(d1, [set_d1, 0], [0, 0.1]) # 초기 gripper 위치에서 block에 닿을수록, 점수 0~0.1 비례 부여
+            
+            # 2: 잡았을 때 (gripper 사이의 거리: 0.05)
+            #print(goal_distance(self._get_obs()["observation"][9:10], self._get_obs()["observation"][10:11])) # gripper finger 사이의 거리
+            #print(self._get_obs()["observation"][9:10], self._get_obs()["observation"][10:11]) # gripper finger 각각 출력
+            #print(self._get_obs()["observation"][3:6]) # block 위치
+            #print((self._get_obs()["observation"][1:2] - self._get_obs()["observation"][9:10]) - (self._get_obs()["observation"][1:2] - self._get_obs()["observation"][10:11])) # gripper finger 사이의 거리
+            #print(self._get_obs()["observation"][1:2] - self._get_obs()["observation"][9:10], self._get_obs()["observation"][1:2] - self._get_obs()["observation"][10:11]) # gripper finger 오른쪽, 왼쪽 위치
+            #print(goal_distance(self._get_obs()["observation"][0:1], self._get_obs()["observation"][3:4])) # gripper의 x좌표와 block의 x좌표 차이
+            #print(self._get_obs()["observation"][2:3], self._get_obs()["observation"][5:6]) # gripper의 z좌표와 block의 z좌표
+            #print(goal_distance(self._get_obs()["observation"][2:3], self._get_obs()["observation"][5:6])) # gripper의 z좌표와 block의 z좌표 차이
+            d2_x  = goal_distance(self._get_obs()["observation"][0:1], self._get_obs()["observation"][3:4]) # gripper의 x좌표와 block의 x좌표 차이
+            d2_z = goal_distance(self._get_obs()["observation"][2:3], self._get_obs()["observation"][5:6]) # gripper의 z좌표와 block의 z좌표 차이
+            gf_r = self._get_obs()["observation"][1] - self._get_obs()["observation"][9] # gripper finger 오른쪽 좌표
+            gf_l = self._get_obs()["observation"][1] - self._get_obs()["observation"][10] # gripper finger 왼쪽 좌표
+            b_y = self._get_obs()["observation"][4] # block의 y좌표
+            set_d2_z = goal_distance(set_gripper[2:3], self._get_obs()["observation"][5:6]) # 초기 gripper의 z좌표와 block의 z좌표 차이
+            d2 = goal_distance(self._get_obs()["observation"][9:10], self._get_obs()["observation"][10:11]) # gripper finger 사이의 거리
+            # gripper와 block의 x축이 일치할 때
+            if(d2_x < 0.004):
+                #print("d2_x: ", d2_x)
+                Reward = Reward + 0.1
+                # block이 gripper_finger사이에 위치할 때(y축)
+                if(gf_r > b_y and gf_l < b_y):
+                    #print("gf_r: ", gf_r, "gf_l", gf_l)
+                    Reward = Reward + 0.3
+                    if(d2_z < 0.01):
+                        #print(d2_z)
+                        Reward = Reward + 0.5
+                        # 잡았을 때
+                        if(d2 > 0.049 and d2 < 0.051):
+                            #print("d2: ", d2)
+                            flag_grasp = 1
+                            Reward = Reward + 0.35
+            #else: # 못잡았을 때
+                #Reward = Reward + 0
+            
+            # 3: 들어올렸을 때
+            #print(goal_distance(self._get_obs()["observation"][5:6], goal[2:3])) # gripper의 z좌표와 빨간 위치의 z좌표 사이의 거리
+            if(flag_grasp == 1):
+                flag_lift = 1
+                Reward = Reward + map_value(achieved_goal[2], [set_achived_goal[2], goal[2]], [0.35, 0.5])
+                #print(map_value(achieved_goal[2], [set_achived_goal[2], goal[2]], [0.35, 0.5]))
+            #else: # 못들어올렸을 때
+                #Reward = Reward + 0
+            
+            # 4: 이동할 때
+            #print(goal_distance(achieved_goal, goal))
+            d4 = goal_distance(achieved_goal, goal) # block위치와 빨간 위치 사이의 거리
+            set_d4 = goal_distance(set_achived_goal, set_goal) # 초기 block위치와 초기 빨간 위치 사이의 거리
+            if(flag_lift == 1):
+                Reward = Reward + map_value(d4, [set_d4, 0], [0.5, 0.7])
+                #print(map_value(d4, [set_d4, 0], [0.5, 0.7]))
+
             if self.reward_type == "sparse":
-                return 0
+                return Reward
                 #return -(d1 * 0.6 + d2 * 0.2 + d3 * 0.2 > self.distance_threshold).astype(np.float32)
             else:
                 return Reward
